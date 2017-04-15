@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {createStore, combineReducers} from "redux";
+import {createStore, combineReducers, bindActionCreators} from "redux";
 import {Provider, connect} from "react-redux";
 
 // Reducer:
@@ -40,47 +40,56 @@ const store = createStore(rootReducer)
 
 // Erzeugung der Presentation-Komponente, deren Eingabe-Werte
 // durch den Container befüllt werden (Dependency Injection)
-const Presentation = ({containerState, containerDispatch}) => {
+const Presentation = ({gruss, name, createUpdateGrussAction, createUpdateNameAction}) => {
     return (
         <div>
             <DataDisplay
-                gruss={containerState.reducer1.gruss}
-                name={containerState.reducer2.name}
-                dispatch={containerDispatch}/>
+                gruss={gruss}
+                name={name}/>
             <DataInput
-                gruss={containerState.reducer1.gruss}
-                name={containerState.reducer2.name}
-                onGrussChange={(e) => containerDispatch({type: "UPDATE_GRUSS", gruss: e.target.value})}
-                onNameChange={(e) => containerDispatch({type: "UPDATE_NAME", name: e.target.value})}/>
+                gruss={gruss}
+                name={name}
+                onGrussChange={(e) => createUpdateGrussAction(e.target.value)}
+                onNameChange={(e) => createUpdateNameAction(e.target.value)}/>
 
         </div>)
 }
 
 // Komponente der Presentation zur Anzeige des States:
-function DataDisplay(props) {
+function DataDisplay({gruss, name}) {
     return <div className="presentationRead">
-        <p>{props.gruss}, {props.name}!!</p>
+        <p>{gruss}, {name}!!</p>
         <p>Wie gehts Dir?</p>
     </div>
 }
 
 // Komponente der Presentation zum Update des States:
-function DataInput(props) {
+function DataInput({gruss, name, onGrussChange, onNameChange}) {
     return <div className="presentationWrite">
-        Gruss: <input type="text" content={props.gruss} onChange={props.onGrussChange}/><br/>
-        Name: <input type="text" content={props.name} onChange={props.onNameChange}/><br/>
+        Gruss: <input type="text" content={gruss} onChange={onGrussChange}/><br/>
+        Name: <input type="text" content={name} onChange={onNameChange}/><br/>
     </div>
 }
+
+// ActionCreators:
+const createUpdateGrussAction = (gruss) => ({
+    type: "UPDATE_GRUSS", gruss
+});
+const createUpdateNameAction = (name) => ({
+    type: "UPDATE_NAME", name
+});
 
 // Erzeugung des Containers, der Zugang zum State besitzt
 // und die Presentation mit dem State verbindet
 const mapStateProps = state => {
-    return {containerState: state}
+    return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }
 
-const mapDispatchToProps = dispatch => {
-    return {containerDispatch: (action) => dispatch(action)}
-}
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+    createUpdateGrussAction,
+    createUpdateNameAction
+}, dispatch);
+
 // Der Container befüllt die Presentation mittels
 // Auslesen des State und Schreiben in den State mittels
 // des dispatch-Callbacks.
