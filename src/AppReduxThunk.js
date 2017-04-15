@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {createStore, combineReducers, bindActionCreators, applyMiddleware} from "redux";
 import {Provider, connect} from "react-redux";
-import thunk from "redux-thunk";
+import thunkMiddleware from "redux-thunk";
 
 // Reducer:
 const initialState = {
@@ -37,10 +37,10 @@ const reducer2 = (state = initialState, action) => {
 const rootReducer = combineReducers({reducer1, reducer2})
 
 // Middleware:
-const middleware = applyMiddleware(thunk);
+const storeEnhancer = applyMiddleware(thunkMiddleware);
 
 // Erzeugung des Application-Store mit dem Root-Reducer:
-const store = createStore(rootReducer, middleware);
+const store = createStore(rootReducer, storeEnhancer);
 
 // Erzeugung der Presentation-Komponente, deren Eingabe-Werte
 // durch den Container befüllt werden (Dependency Injection)

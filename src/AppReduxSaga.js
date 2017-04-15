@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import {createStore, combineReducers, bindActionCreators, applyMiddleware} from "redux";
 import {Provider, connect} from "react-redux";
-import thunk from "redux-thunk";
+import createSagaMiddleware from "redux-saga";
+import {call, put, takeEvery} from "redux-saga/effects";
 
 // Reducer:
 const initialState = {
@@ -37,10 +38,28 @@ const reducer2 = (state = initialState, action) => {
 const rootReducer = combineReducers({reducer1, reducer2})
 
 // Middleware:
-const middleware = applyMiddleware(thunk);
+//const middleware = applyMiddleware(thunk);
+const middleware = createSagaMiddleware();
+const storeEnhancer = applyMiddleware(middleware);
 
 // Erzeugung des Application-Store mit dem Root-Reducer:
-const store = createStore(rootReducer, middleware);
+const store = createStore(rootReducer, storeEnhancer);
+
+// Create Saga:
+const saga = function*() {
+    console.log("saga");
+    yield takeEvery("ONCHANGE_GRUSS", grussListener)
+};
+
+const grussListener = function*({gruss}) {
+    console.log(`saga grussListener: function-Argument ${gruss} received from Saga middleware`);
+    const promiseTask = (resolve, reject)=> setTimeout(()=> resolve("timeout finished"), 3000);
+    let message = yield new Promise(promiseTask);
+    console.log(`saga grussListener: yield-Argument ${message} received from Saga middleware`);
+    yield put({type: "UPDATE_GRUSS", gruss});
+};
+middleware.run(saga);
+
 
 // Erzeugung der Presentation-Komponente, deren Eingabe-Werte
 // durch den Container befüllt werden (Dependency Injection)
@@ -76,11 +95,9 @@ function DataInput({gruss, name, onGrussChange, onNameChange}) {
 }
 
 // ActionCreators:
-const createUpdateGrussAction = (gruss) => (dispatch, getState) => {
-    setTimeout(()=> {
-        dispatch({type: "UPDATE_GRUSS", gruss});
-    }, 3000);
-};
+const createUpdateGrussAction = (gruss) => ({
+    type: "ONCHANGE_GRUSS", gruss
+});
 const createUpdateNameAction = (name) => ({
     type: "UPDATE_NAME", name
 });
@@ -91,7 +108,10 @@ const mapStateProps = state => {
     return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }
 
-const mapDispatchToProps = {createUpdateGrussAction, createUpdateNameAction}
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+    createUpdateGrussAction,
+    createUpdateNameAction
+}, dispatch);
 
 // Der Container befüllt die Presentation mittels
 // Auslesen des State und Schreiben in den State mittels
