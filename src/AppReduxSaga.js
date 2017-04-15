@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {createStore, combineReducers, bindActionCreators, applyMiddleware} from "redux";
 import {Provider, connect} from "react-redux";
-import createSagaMiddleware from "redux-saga";
+import createSagaMiddleware, {delay} from "redux-saga";
 import {call, put, takeEvery} from "redux-saga/effects";
 
 // Reducer:
@@ -52,11 +52,8 @@ const saga = function*() {
 };
 
 const grussListener = function*({gruss}) {
-    console.log(`saga grussListener: function-Argument ${gruss} received from Saga middleware`);
-    const promiseTask = (resolve, reject)=> setTimeout(()=> resolve("timeout finished"), 3000);
-    let message = yield new Promise(promiseTask);
-    console.log(`saga grussListener: yield-Argument ${message} received from Saga middleware`);
-    yield put({type: "UPDATE_GRUSS", gruss});
+    yield delay(3000);
+    yield put({type: "UPDATE_GRUSS", gruss: gruss.toUpperCase()});
 };
 middleware.run(saga);
 
