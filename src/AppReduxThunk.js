@@ -1,97 +1,109 @@
 import React, {Component} from 'react';
-import './App.css';
-import {createStore, combineReducers} from "redux";
+import {createStore, combineReducers, bindActionCreators, applyMiddleware} from "redux";
 import {Provider, connect} from "react-redux";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import thunk from "redux-thunk";
 
-// InitialState:
+// Reducer:
 const initialState = {
     gruss: "...",
     name: "Nobody"
 }
 
-// Reducers:
-const reducer1 = (state = initialState, {type, gruss}) => {
-    switch (type) {
+// Reducer für gruss-property des state:
+const reducer1 = (state = initialState, action) => {
+    switch (action.type) {
         case "UPDATE_GRUSS":
-            return {...state, type, gruss};
+            return {...state, gruss: action.gruss};
         case "DROP_GRUSS":
-            return {...state, type, gruss: "..."};
+            return {...state, gruss: "..."};
         default:
             return state;
     }
 }
 
-const reducer2 = (state = initialState, {type, name}) => {
-    switch (type) {
+// Reducer für name-property des state:
+const reducer2 = (state = initialState, action) => {
+    switch (action.type) {
         case "UPDATE_NAME":
-            return {...state, type, name};
+            return {...state, name: action.name};
         case "DROP_NAME":
-            return {...state, type, name: "..."};
+            return {...state, name: "..."};
         default:
             return state;
     }
 }
 
-const rootReducer = combineReducers(reducer1, reducer2)
+// Kombination aller Reducer zu einem RootReducer:
+const rootReducer = combineReducers({reducer1, reducer2})
 
-// Store:
-const store = createStore(rootReducer)
+// Middleware:
+const middleware = applyMiddleware(thunk);
 
-// Container:
-/*const Container = props => {
-    return
-    <div>
-        <PresentationRead
-            gruss={props.containerState}
-            name={props.containerName}
-            dispatch={props.containerDispatch}/>
-        <PresentationWrite
-            onNameChange={(event) => props.containerDispatch({type: "UPDATE_NAME", name: event.target.value})}
-            onGrussChange={(event) => props.containerDispatch({type: "UPDATE_GRUSS", name: event.target.value})}/>
-    </div>
-}
-*/
-const Container = props => {
-    return
-    <div>
-        Hallo
-        /*<PresentationRead gruss="hallo" name="Maik"/>*/
-    </div>
-}
+// Erzeugung des Application-Store mit dem Root-Reducer:
+const store = createStore(rootReducer, middleware);
 
+// Erzeugung der Presentation-Komponente, deren Eingabe-Werte
+// durch den Container befüllt werden (Dependency Injection)
+const Presentation = ({gruss, name, createUpdateGrussAction, createUpdateNameAction}) => {
+    return (
+        <div>
+            <DataDisplay
+                gruss={gruss}
+                name={name}/>
+            <DataInput
+                gruss={gruss}
+                name={name}
+                onGrussChange={(e) => createUpdateGrussAction(e.target.value)}
+                onNameChange={(e) => createUpdateNameAction(e.target.value)}/>
 
-const mapStateProps = state => {
-    containerGruss: state.gruss
+        </div>)
 }
 
-const mapDispatchToPros = dispatch => {
-    return {containerDispatch: dispatch}
-}
-
-//connect(mapStateProps, mapDispatchToPros)(Container)
-
-// Presentations:
-function PresentationRead(props) {
+// Komponente der Presentation zur Anzeige des States:
+function DataDisplay({gruss, name}) {
     return <div className="presentationRead">
-        <p>{props.gruss}, {props.name}!!</p>
+        <p>{gruss}, {name}!!</p>
         <p>Wie gehts Dir?</p>
     </div>
 }
 
-function PresentationWrite(props) {
+// Komponente der Presentation zum Update des States:
+function DataInput({gruss, name, onGrussChange, onNameChange}) {
     return <div className="presentationWrite">
-        Gruss: <input type="text" content={props.gruss} onChange={props.onGrussChange}/><br/>
-        Name: <input type="text" content={props.name} onChange={props.onNameChange}/><br/>
+        Gruss: <input type="text" content={gruss} onChange={onGrussChange}/><br/>
+        Name: <input type="text" content={name} onChange={onNameChange}/><br/>
     </div>
 }
+
+// ActionCreators:
+const createUpdateGrussAction = (gruss) => (dispatch, getState) => {
+    setTimeout(()=> {
+        dispatch({type: "UPDATE_GRUSS", gruss});
+    }, 3000);
+};
+const createUpdateNameAction = (name) => ({
+    type: "UPDATE_NAME", name
+});
+
+// Erzeugung des Containers, der Zugang zum State besitzt
+// und die Presentation mit dem State verbindet
+const mapStateProps = state => {
+    return {gruss: state.reducer1.gruss, name: state.reducer2.name}
+}
+
+const mapDispatchToProps = {createUpdateGrussAction, createUpdateNameAction}
+
+// Der Container befüllt die Presentation mittels
+// Auslesen des State und Schreiben in den State mittels
+// des dispatch-Callbacks.
+const Container = connect(mapStateProps, mapDispatchToProps)(Presentation)
 
 class App extends Component {
     render() {
         return (
-           // <Provider store={store}>
-            <Container />
-            //</Provider>
+            <Provider store={store}>
+                <Container />
+            </Provider>
         );
     }
 }
