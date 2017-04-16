@@ -1,8 +1,8 @@
 import React from "react";
 
-export default () => (
+export default ({match}) => (
     <div>
-        <div>Wetter</div>
+        <div>Wetter für ID: {match.params.id}</div>
         <form>
             <input type="text"/>
             <button type="submit">Submit</button>

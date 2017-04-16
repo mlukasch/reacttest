@@ -24,7 +24,7 @@ export default () =>
         <div>
             <Navigation />
             <Route exact path="/" component={HomePage}/>
-            <Route path="/weather" component={WeatherPage}/>
+            <Route path="/weather/:id" component={WeatherPage}/>
             <Route path="/redux-promise" component={AppReduxPromisePage}/>
             <Route path="/redux-thunk" component={AppReduxThunkPage}/>
             <Route path="/redux-saga" component={AppReduxSagaPage}/>
