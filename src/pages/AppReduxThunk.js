@@ -1,13 +1,12 @@
 import React, {Component} from 'react';
 import {createStore, combineReducers, bindActionCreators, applyMiddleware} from "redux";
 import {Provider, connect} from "react-redux";
-import createSagaMiddleware, {delay} from "redux-saga";
-import {call, put, takeEvery} from "redux-saga/effects";
+import thunkMiddleware from "redux-thunk";
 
 // Reducer:
 const initialState = {
-    gruss: "...",
-    name: "Nobody"
+    gruss: "Salve",
+    name: "Mr. Know Body"
 }
 
 // Reducer für gruss-property des state:
@@ -38,25 +37,10 @@ const reducer2 = (state = initialState, action) => {
 const rootReducer = combineReducers({reducer1, reducer2})
 
 // Middleware:
-//const middleware = applyMiddleware(thunk);
-const middleware = createSagaMiddleware();
-const storeEnhancer = applyMiddleware(middleware);
+const storeEnhancer = applyMiddleware(thunkMiddleware);
 
 // Erzeugung des Application-Store mit dem Root-Reducer:
 const store = createStore(rootReducer, storeEnhancer);
-
-// Create Saga:
-const saga = function*() {
-    console.log("saga");
-    yield takeEvery("ONCHANGE_GRUSS", grussListener)
-};
-
-const grussListener = function*({gruss}) {
-    yield delay(3000);
-    yield put({type: "UPDATE_GRUSS", gruss: gruss.toUpperCase()});
-};
-middleware.run(saga);
-
 
 // Erzeugung der Presentation-Komponente, deren Eingabe-Werte
 // durch den Container befüllt werden (Dependency Injection)
@@ -86,15 +70,18 @@ function DataDisplay({gruss, name}) {
 // Komponente der Presentation zum Update des States:
 function DataInput({gruss, name, onGrussChange, onNameChange}) {
     return <div className="presentationWrite">
-        Gruss: <input type="text" content={gruss} onChange={onGrussChange}/><br/>
+        Gruss: <input type="text" content={gruss} onChange={onGrussChange}/>
+        <span style={{color:"red"}}>(Displayed with Delay by returning a Function in ActionCreator using redux-thunk)</span><br/>
         Name: <input type="text" content={name} onChange={onNameChange}/><br/>
     </div>
 }
 
 // ActionCreators:
-const createUpdateGrussAction = (gruss) => ({
-    type: "ONCHANGE_GRUSS", gruss
-});
+const createUpdateGrussAction = (gruss) => (dispatch, getState) => {
+    setTimeout(()=> {
+        dispatch({type: "UPDATE_GRUSS", gruss: gruss.toUpperCase()});
+    }, 3000);
+};
 const createUpdateNameAction = (name) => ({
     type: "UPDATE_NAME", name
 });
@@ -105,24 +92,15 @@ const mapStateProps = state => {
     return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({
-    createUpdateGrussAction,
-    createUpdateNameAction
-}, dispatch);
+const mapDispatchToProps = {createUpdateGrussAction, createUpdateNameAction}
 
 // Der Container befüllt die Presentation mittels
 // Auslesen des State und Schreiben in den State mittels
 // des dispatch-Callbacks.
 const Container = connect(mapStateProps, mapDispatchToProps)(Presentation)
 
-class App extends Component {
-    render() {
-        return (
-            <Provider store={store}>
-                <Container />
-            </Provider>
-        );
-    }
-}
-
-export default App;
+export default ()=> (
+    <Provider store={store}>
+        <Container />
+    </Provider>
+);
