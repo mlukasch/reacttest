@@ -88,7 +88,7 @@ function DataInput({gruss, name, onGrussChange, onNameChange}) {
     return <div className="presentationWrite">
         Gruss: <input type="text" content={gruss} onChange={onGrussChange}/>
         <span
-            style={{color:"red"}}>(Displayed with Delay by using Effects in a saga-generator function via redux-saga)</span><br/>
+            style={{color:"red"}}>(Displayed with Delay by using Effects in a saga-generator function using redux-saga)</span><br/>
         Name: <input type="text" content={name} onChange={onNameChange}/><br/>
     </div>
 }
