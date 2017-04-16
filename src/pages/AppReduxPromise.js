@@ -86,7 +86,8 @@ const createUpdateNameAction = (name) => ({
 });
 
 // Erzeugung des Containers, der Zugang zum State besitzt
-// und die Presentation mit dem State verbindet
+// und die Presentation mit dem State verbindet.
+// Mapping between Component props & State-Properties:
 const mapStateProps = state => {
     return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }

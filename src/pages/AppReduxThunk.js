@@ -87,11 +87,18 @@ const createUpdateNameAction = (name) => ({
 });
 
 // Erzeugung des Containers, der Zugang zum State besitzt
-// und die Presentation mit dem State verbindet
+// und die Presentation mit dem State verbindet.
+// Mapping between Component props & State-Properties:
 const mapStateProps = state => {
     return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }
 
+// Mapping between Component props & ActionCreators
+// not returning Actions but rather
+// returning Functions consuming the application store's
+// dispatch-method & state.
+// Redux-thunk-middleware will invoke those functions
+// and feed into them the store's dispatch-method & state
 const mapDispatchToProps = {createUpdateGrussAction, createUpdateNameAction}
 
 // Der Container befüllt die Presentation mittels
