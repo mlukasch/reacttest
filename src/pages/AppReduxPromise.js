@@ -69,7 +69,8 @@ function DataDisplay({gruss, name}) {
 function DataInput({gruss, name, onGrussChange, onNameChange}) {
     return <div className="presentationWrite">
         Gruss: <input type="text" content={gruss} onChange={onGrussChange}/>
-        <span style={{color:"red"}}>(Displayed with Delay by returning a Promise in ActionCreator using redux-promise)</span><br/>
+        <span
+            style={{color:"red"}}>(Displayed with Delay by returning a Promise in ActionCreator using redux-promise)</span><br/>
         Name: <input type="text" content={name} onChange={onNameChange}/><br/>
     </div>
 }
@@ -90,15 +91,18 @@ const mapStateProps = state => {
     return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({
+// The actions created by ActionCreators will be
+// implicitly piped into the dispatch-method
+// of the application store by redux:
+const actionCreators = {
     createUpdateGrussAction,
     createUpdateNameAction
-}, dispatch);
+};
 
 // Der Container befüllt die Presentation mittels
 // Auslesen des State und Schreiben in den State mittels
 // des dispatch-Callbacks.
-const GrussContainer = connect(mapStateProps, mapDispatchToProps)(Presentation)
+const GrussContainer = connect(mapStateProps, actionCreators)(Presentation)
 
 export default () => (
     <div>

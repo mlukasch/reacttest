@@ -107,15 +107,18 @@ const mapStateProps = state => {
     return {gruss: state.reducer1.gruss, name: state.reducer2.name}
 }
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({
+// The actions created by ActionCreators will be
+// implicitly piped into the dispatch-method
+// of the application store by redux:
+const actionCreators = {
     createUpdateGrussAction,
     createUpdateNameAction
-}, dispatch);
+};
 
 // Der Container befüllt die Presentation mittels
 // Auslesen des State und Schreiben in den State mittels
 // des dispatch-Callbacks.
-const Container = connect(mapStateProps, mapDispatchToProps)(Presentation)
+const Container = connect(mapStateProps, actionCreators)(Presentation)
 
 export default () =>(
     <Provider store={store}>
